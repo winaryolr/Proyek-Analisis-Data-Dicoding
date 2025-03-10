@@ -4,8 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.preprocessing import MinMaxScaler
 
-# Load data
-@st.cache_data
+# Mengambil data
 def load_data():
     df = pd.read_csv("all-data.csv")
     df['dteday'] = pd.to_datetime(df['dteday'])
@@ -63,7 +62,7 @@ def plot_normalized_data(df):
     fig, ax = plt.subplots(figsize=(12, 6))
     sns.scatterplot(data=combined_df, x="category", y="value", hue="feature", ax=ax)
     ax.set_title("Kondisi Ideal Penyewaan Sepeda (Normalized)")
-    ax.axhline(y=0.8, color='r', linestyle='--', label='Garis y = 0.8')
+    ax.axhline(y=0.9, color='r', linestyle='--', label='Garis y = 0.9')
     ax.legend()
     st.pyplot(fig)
 
@@ -84,7 +83,7 @@ def plot_clustered_data(df):
         weather_avg.rename(columns={"weathersit": "category", "cnt_normalized": "value"}).assign(feature="weather")
     ])
 
-    bins = [0, 0.3, 0.7, 1]
+    bins = [0, 0.35, 0.75, 1]
     labels = ["Rendah", "Sedang", "Tinggi"]
     combined_df["cluster"] = pd.cut(combined_df["value"], bins=bins, labels=labels)
 
@@ -117,25 +116,19 @@ def plot_feature_avg(df):
     ax.set_title("Rata-rata Penyewaan Sepeda per Fitur")
     st.pyplot(fig)
 
-# Dashboard
+# Pembuatan Dashboard
 st.title("Dashboard Analisis Penyewaan Sepeda")
-
 st.subheader("Rata-rata Penyewaan Sepeda per Jam")
 plot_hour_avg(allData)
-
 st.subheader("Rata-rata Penyewaan Sepeda berdasarkan Musim")
 plot_season_avg(allData)
-
 st.subheader("Rata-rata Penyewaan Sepeda berdasarkan Cuaca")
 plot_weather_avg(allData)
-
-st.subheader("Kondisi Ideal Penyewaan Sepeda (Normalized)")
+st.subheader("Kondisi Ideal Penyewaan Sepeda (ternormalisasi)")
 plot_normalized_data(allData)
-
-st.subheader("Clustering Kondisi Penyewaan Sepeda (Binning)")
+st.subheader("Clustering Kondisi Penyewaan Sepeda")
 plot_clustered_data(allData)
-
-st.subheader("Rata-rata Penyewaan Sepeda per Fitur")
+st.subheader("Rata-rata Penyewaan Sepeda per Kondisi")
 plot_feature_avg(allData)
 
-st.caption("Dashboard ini menampilkan analisis penyewaan sepeda berdasarkan data historis.")
+st.caption("Dashboard analisis penyewaan sepeda.")
