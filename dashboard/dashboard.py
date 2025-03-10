@@ -4,9 +4,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.preprocessing import MinMaxScaler
 
-# Load data (asumsikan sssallData sudah didefinisikan)
-# Ganti dengan cara Anda memuat data jika perlu
-allData = pd.read_csv("all-data.csv") #Ganti dengan path file yang benar
+# Load data
+allData = pd.read_csv("all-data.csv")
 
 # Konversi kolom datetime
 allData['dteday'] = pd.to_datetime(allData['dteday'])
