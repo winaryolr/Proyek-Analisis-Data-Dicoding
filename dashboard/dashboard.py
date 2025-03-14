@@ -36,7 +36,7 @@ def create_weather_avg(df):
     weather_avg.rename(columns={"cnt": "average_cnt"}, inplace=True)
     return weather_avg
 
-theData_df = pd.read_csv("all.csv")
+theData_df = pd.read_csv("all-data.csv")
 
 weekday_avg = create_weekday_avg(theData_df)
 month_avg = create_month_avg(theData_df)
