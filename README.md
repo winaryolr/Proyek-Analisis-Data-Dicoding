@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Dashboard Proyek Analisis Data
 
 ## Setup Environment - Anaconda
