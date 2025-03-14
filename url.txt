@@ -1,1 +1,1 @@
-https://db-1-loveta.streamlit.app/
+https://data-analytics-loveta.streamlit.app/
