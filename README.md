@@ -2,14 +2,14 @@
 
 ## Setup Environment - Anaconda
 
-'''sh
+'''bash
 conda create --name main-ds python=3.12
 conda activate main-ds
 pip install -r requirements.txt
 
 ## Setup Environment - Shell/Terminal
 
-'''sh
+'''bash
 mkdir Proyek-Analisis-Data-Dicoding
 cd Proyek-Analisis-Data-Dicoding
 pipenv install
@@ -18,5 +18,5 @@ pip install -r requirements.txt
 
 ## Run streamlit app
 
-'''sh
+'''bash
 streamlit run dashboard.py
