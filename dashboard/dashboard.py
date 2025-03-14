@@ -1,134 +1,179 @@
-import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.preprocessing import MinMaxScaler
+import streamlit as st
+from babel.numbers import format_currency
 
-# Mengambil data
-def load_data():
-    df = pd.read_csv("all-data.csv")
-    df['dteday'] = pd.to_datetime(df['dteday'])
-    return df
+sns.set(style='dark')
 
-allData = load_data()
+def create_weekday_avg(df):
+    """Menghitung rata-rata penyewaan sepeda per hari."""
+    weekday_avg = df.groupby("weekday")["cnt"].mean().reset_index()
+    weekday_avg.rename(columns={"cnt": "average_cnt"}, inplace=True)
+    return weekday_avg
 
-# Fungsi untuk visualisasi
-def plot_hour_avg(df):
+def create_month_avg(df):
+    """Menghitung rata-rata penyewaan sepeda per bulan."""
+    month_avg = df.groupby("mnth")["cnt"].mean().reset_index()
+    month_avg.rename(columns={"cnt": "average_cnt"}, inplace=True)
+    return month_avg
+
+def create_hour_avg(df):
+    """Menghitung rata-rata penyewaan sepeda per jam."""
     hour_avg = df.groupby("hr")["cnt"].mean().reset_index()
-    fig, ax = plt.subplots()
-    sns.lineplot(x="hr", y="cnt", data=hour_avg, marker='o', ax=ax)
-    ax.set_title("Rata-rata Penyewaan Sepeda per Jam")
-    ax.set_xlabel("Jam (0-23)")
-    ax.set_ylabel("Rata-rata Penyewaan")
-    st.pyplot(fig)
+    hour_avg.rename(columns={"cnt": "average_cnt"}, inplace=True)
+    return hour_avg
 
-def plot_season_avg(df):
+def create_season_avg(df):
+    """Menghitung rata-rata penyewaan sepeda per musim."""
     season_avg = df.groupby("season")["cnt"].mean().reset_index()
-    fig, ax = plt.subplots()
-    sns.barplot(x="season", y="cnt", data=season_avg, ax=ax)
-    ax.set_title("Rata-rata Penyewaan Sepeda berdasarkan Musim")
-    ax.set_xlabel("Musim")
-    ax.set_ylabel("Rata-rata Penyewaan")
-    ax.set_xticklabels(['Spring', 'Summer', 'Fall', 'Winter'])
-    st.pyplot(fig)
+    season_avg.rename(columns={"cnt": "average_cnt"}, inplace=True)
+    return season_avg
 
-def plot_weather_avg(df):
+def create_weather_avg(df):
+    """Menghitung rata-rata penyewaan sepeda per kondisi cuaca."""
     weather_avg = df.groupby("weathersit")["cnt"].mean().reset_index()
-    fig, ax = plt.subplots()
-    sns.barplot(x="weathersit", y="cnt", data=weather_avg, ax=ax)
-    ax.set_title("Rata-rata Penyewaan Sepeda berdasarkan Cuaca")
-    ax.set_xlabel("Cuaca")
-    ax.set_ylabel("Rata-rata Penyewaan")
-    ax.set_xticklabels(['Cerah', 'Berawan', 'Hujan Ringan', 'Hujan Lebat'])
-    st.pyplot(fig)
+    weather_avg.rename(columns={"cnt": "average_cnt"}, inplace=True)
+    return weather_avg
 
-def plot_normalized_data(df):
-    scaler = MinMaxScaler()
-    
-    hour_avg = df.groupby("hr")["cnt"].mean().reset_index()
-    season_avg = df.groupby("season")["cnt"].mean().reset_index()
-    weather_avg = df.groupby("weathersit")["cnt"].mean().reset_index()
-    
-    hour_avg["cnt_normalized"] = scaler.fit_transform(hour_avg[["cnt"]])
-    season_avg["cnt_normalized"] = scaler.fit_transform(season_avg[["cnt"]])
-    weather_avg["cnt_normalized"] = scaler.fit_transform(weather_avg[["cnt"]])
+theData_df = pd.read_csv("all.csv")
 
-    combined_df = pd.concat([
-        hour_avg.rename(columns={"hr": "category", "cnt_normalized": "value"}).assign(feature="hour"),
-        season_avg.rename(columns={"season": "category", "cnt_normalized": "value"}).assign(feature="season"),
-        weather_avg.rename(columns={"weathersit": "category", "cnt_normalized": "value"}).assign(feature="weather")
-    ])
+weekday_avg = create_weekday_avg(theData_df)
+month_avg = create_month_avg(theData_df)
+hour_avg = create_hour_avg(theData_df)
+season_avg = create_season_avg(theData_df)
+weather_avg = create_weather_avg(theData_df)
 
-    fig, ax = plt.subplots(figsize=(12, 6))
-    sns.scatterplot(data=combined_df, x="category", y="value", hue="feature", ax=ax)
-    ax.set_title("Kondisi Ideal Penyewaan Sepeda (Normalized)")
-    ax.axhline(y=0.9, color='r', linestyle='--', label='Garis y = 0.9')
-    ax.legend()
-    st.pyplot(fig)
+st.header('Proyek Analisis Data')
+st.subheader('Statistik Penyewaan Sepeda')
 
-def plot_clustered_data(df):
-    scaler = MinMaxScaler()
+# Metrik
+col1, col2 = st.columns(2)
 
-    hour_avg = df.groupby("hr")["cnt"].mean().reset_index()
-    season_avg = df.groupby("season")["cnt"].mean().reset_index()
-    weather_avg = df.groupby("weathersit")["cnt"].mean().reset_index()
-    
-    hour_avg["cnt_normalized"] = scaler.fit_transform(hour_avg[["cnt"]])
-    season_avg["cnt_normalized"] = scaler.fit_transform(season_avg[["cnt"]])
-    weather_avg["cnt_normalized"] = scaler.fit_transform(weather_avg[["cnt"]])
+with col1:
+    total_avg_weekday = weekday_avg['average_cnt'].mean()
+    st.metric("Rata-rata Penyewaan per Hari", value=round(total_avg_weekday, 2))
 
-    combined_df = pd.concat([
-        hour_avg.rename(columns={"hr": "category", "cnt_normalized": "value"}).assign(feature="hour"),
-        season_avg.rename(columns={"season": "category", "cnt_normalized": "value"}).assign(feature="season"),
-        weather_avg.rename(columns={"weathersit": "category", "cnt_normalized": "value"}).assign(feature="weather")
-    ])
+with col2:
+    total_avg_month = month_avg['average_cnt'].mean()
+    st.metric("Rata-rata Penyewaan per Bulan", value=round(total_avg_month, 2))
 
-    bins = [0, 0.35, 0.75, 1]
-    labels = ["Rendah", "Sedang", "Tinggi"]
-    combined_df["cluster"] = pd.cut(combined_df["value"], bins=bins, labels=labels)
+# Plot
+st.subheader("Rata-rata Penyewaan Sepeda")
 
-    fig, ax = plt.subplots(figsize=(12, 6))
-    sns.scatterplot(data=combined_df, x="category", y="value", hue="cluster", ax=ax)
-    ax.set_title("Clustering Kondisi Penyewaan Sepeda (Binning)")
-    st.pyplot(fig)
+fig, axes = plt.subplots(5, 1, figsize=(16, 20))
 
-def plot_feature_avg(df):
-    scaler = MinMaxScaler()
+# Plot 1: Rata-rata Penyewaan Sepeda per-hari
+sns.lineplot(x=weekday_avg['weekday'], y=weekday_avg['average_cnt'], marker='o', ax=axes[0])
+axes[0].set_title("Rata-rata Penyewaan Sepeda per-hari")
+axes[0].set_xlabel("Hari")
+axes[0].set_ylabel("Rata-rata Penyewaan")
+axes[0].set_xticks([0, 1, 2, 3, 4, 5, 6])
+axes[0].set_xticklabels(['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'], rotation=45)
+axes[0].grid(True)
 
-    hour_avg = df.groupby("hr")["cnt"].mean().reset_index()
-    season_avg = df.groupby("season")["cnt"].mean().reset_index()
-    weather_avg = df.groupby("weathersit")["cnt"].mean().reset_index()
-    
-    hour_avg["cnt_normalized"] = scaler.fit_transform(hour_avg[["cnt"]])
-    season_avg["cnt_normalized"] = scaler.fit_transform(season_avg[["cnt"]])
-    weather_avg["cnt_normalized"] = scaler.fit_transform(weather_avg[["cnt"]])
+# Plot 2: Rata-rata Penyewaan Sepeda per Bulan
+sns.lineplot(x=month_avg['mnth'], y=month_avg['average_cnt'], marker='o', ax=axes[1])
+axes[1].set_title("Rata-rata Penyewaan Sepeda per Bulan")
+axes[1].set_xlabel("Bulan (1-12)")
+axes[1].set_ylabel("Rata-rata Penyewaan")
+axes[1].grid(True)
 
-    combined_df = pd.concat([
-        hour_avg.rename(columns={"hr": "category", "cnt_normalized": "value"}).assign(feature="hour"),
-        season_avg.rename(columns={"season": "category", "cnt_normalized": "value"}).assign(feature="season"),
-        weather_avg.rename(columns={"weathersit": "category", "cnt_normalized": "value"}).assign(feature="weather")
-    ])
+# Plot 3: Rata-rata Penyewaan Sepeda per Jam
+sns.lineplot(x=hour_avg['hr'], y=hour_avg['average_cnt'], marker='o', ax=axes[2])
+axes[2].set_title("Rata-rata Penyewaan Sepeda per Jam")
+axes[2].set_xlabel("Jam (0-23)")
+axes[2].set_ylabel("Rata-rata Penyewaan")
+axes[2].grid(True)
 
-    grouped_df = combined_df.groupby("feature")["value"].mean().reset_index()
+# Plot 4: Rata-rata Penyewaan Sepeda berdasarkan Musim
+sns.lineplot(x=season_avg['season'], y=season_avg['average_cnt'], marker='o', ax=axes[3])
+axes[3].set_title("Rata-rata Penyewaan Sepeda berdasarkan Musim")
+axes[3].set_xlabel("Musim")
+axes[3].set_ylabel("Rata-rata Penyewaan")
+axes[3].set_xticks([1, 2, 3, 4])
+axes[3].set_xticklabels(['Spring', 'Summer', 'Fall', 'Winter'], rotation=45)
+axes[3].grid(True)
 
-    fig, ax = plt.subplots(figsize=(8, 5))
-    sns.barplot(data=grouped_df, x="feature", y="value", ax=ax)
-    ax.set_title("Rata-rata Penyewaan Sepeda per Fitur")
-    st.pyplot(fig)
+# Plot 5: Rata-rata Penyewaan Sepeda berdasarkan Cuaca
+sns.lineplot(x=weather_avg['weathersit'], y=weather_avg['average_cnt'], marker='o', ax=axes[4])
+axes[4].set_title("Rata-rata Penyewaan Sepeda berdasarkan Cuaca")
+axes[4].set_xlabel("Cuaca")
+axes[4].set_ylabel("Rata-rata Penyewaan")
+axes[4].set_xticks([1, 2, 3])
+axes[4].set_xticklabels(['Cerah', 'Berawan', 'Hujan Ringan'], rotation=45)
+axes[4].grid(True)
 
-# Pembuatan Dashboard
-st.title("Dashboard Analisis Penyewaan Sepeda")
-st.subheader("Rata-rata Penyewaan Sepeda per Jam")
-plot_hour_avg(allData)
-st.subheader("Rata-rata Penyewaan Sepeda berdasarkan Musim")
-plot_season_avg(allData)
-st.subheader("Rata-rata Penyewaan Sepeda berdasarkan Cuaca")
-plot_weather_avg(allData)
-st.subheader("Kondisi Ideal Penyewaan Sepeda (ternormalisasi)")
-plot_normalized_data(allData)
-st.subheader("Clustering Kondisi Penyewaan Sepeda")
-plot_clustered_data(allData)
-st.subheader("Rata-rata Penyewaan Sepeda per Kondisi")
-plot_feature_avg(allData)
+plt.tight_layout()
+st.pyplot(fig)
 
-st.caption("Dashboard analisis penyewaan sepeda.")
+# Membuat Kategori jam/waktu
+def kategori_jam_baru(jam):
+    if 0 <= jam <= 5:
+        return "Malam"
+    elif 6 <= jam <= 11:
+        return "Pagi"
+    elif 12 <= jam <= 17:
+        return "Siang"
+    else:
+        return "Sore"
+
+hourData_df['waktu'] = hourData_df['hr'].apply(kategori_jam_baru)
+
+# Ubah variabel hari dari angka ke char
+def day(weekday):
+    daftar_hari = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
+    if 0 <= weekday <= 6:
+        return daftar_hari[weekday]
+    else:
+        return None
+
+hourData_df['hari'] = hourData_df['weekday'].apply(day)
+
+# Ubah variabel season dari angka ke char
+def seasons_cat(season):
+    daftar_musim = ['Semi', 'Panas', 'Gugur', 'Salju']
+    if 1 <= season <= 4:
+        return daftar_musim[season - 1]  # Mengurangi 1 dari indeks musim
+    else:
+        return None
+
+hourData_df['musim'] = hourData_df['season'].apply(seasons_cat)
+
+# Ubah variabel holiday dari angka ke char
+def hol(holiday):
+    if holiday == 0:
+        return 'Tidak'
+    else:
+        return 'Ya'
+
+hourData_df['liburan'] = hourData_df['holiday'].apply(hol)
+
+# Pivot tables
+pivot_kategori_waktu_hari = hourData_df.pivot_table(values='cnt', index='waktu', columns='hari', aggfunc='mean')
+pivot_kategori_musim_liburan = hourData_df.pivot_table(values='cnt', index='liburan', columns='musim', aggfunc='mean')
+
+# Membuat kolom kiri dan kanan
+col1, col2 = st.columns(2)
+
+# Heatmap 1: Kategori jam baru dan hari (di kolom kiri)
+with col1:
+    st.subheader("Rata-rata Penyewaan Sepeda per Waktu dan Hari")
+    fig1, ax1 = plt.subplots(figsize=(8, 6))  # Ukuran plot disesuaikan
+    urutan = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
+    sns.heatmap(pivot_kategori_waktu_hari[urutan], cmap='YlGnBu', annot=True, fmt=".1f", ax=ax1)
+    ax1.set_xlabel("Hari")
+    ax1.set_ylabel("Waktu")
+    st.pyplot(fig1)
+
+# Heatmap 2: Kategori jam baru dan musim (di kolom kanan)
+with col2:
+    st.subheader("Rata-rata Penyewaan Sepeda per Kategori Jam Baru dan Musim")
+    fig2, ax2 = plt.subplots(figsize=(8, 6))  # Ukuran plot disesuaikan
+    runtutan = ['Semi', 'Panas', 'Gugur', 'Salju']
+    sns.heatmap(pivot_kategori_musim_liburan[runtutan], cmap='YlGnBu', annot=True, fmt=".1f", ax=ax2)
+    ax2.set_xlabel("Musim (1=Spring, 4=Winter)")
+    ax2.set_ylabel("Kategori Jam")
+    st.pyplot(fig2)
+
+    st.caption('made by Loveta Ramyhaidar Winaryo - MC010D5Y1099')
