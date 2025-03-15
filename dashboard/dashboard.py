@@ -51,7 +51,11 @@ with st.sidebar:
         value=[min_date, max_date]
     )
 
-main_df = theData_df[(theData_df["dteday"] >= start_date) & (theData_df["dteday"] <= end_date)]
+# mengubah tipe data
+main_df = theData_df[
+    (theData_df["dteday"] >= pd.to_datetime(start_date)) & 
+    (theData_df["dteday"] <= pd.to_datetime(end_date))
+]
 
 weekday_avg = create_weekday_avg(theData_df)
 month_avg = create_month_avg(theData_df)
