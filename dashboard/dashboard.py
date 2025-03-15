@@ -38,6 +38,21 @@ def create_weather_avg(df):
 
 theData_df = pd.read_csv("all-data.csv")
 
+#Proses membuat filtering
+theData_df['dteday'] = pd.to_datetime(theData_df['dteday'])
+
+min_date = theData_df["dteday"].min()
+max_date = theData_df["dteday"].max()
+
+with st.sidebar:
+    start_date, end_date = st.date_input(
+        label='Jangka Hari', min_value=min_date,
+        max_value=max_date,
+        value=[min_date, max_date]
+    )
+
+main_df = theData_df[(theData_df["dteday"] >= start_date) & (theData_df["dteday"] <= end_date)]
+
 weekday_avg = create_weekday_avg(theData_df)
 month_avg = create_month_avg(theData_df)
 hour_avg = create_hour_avg(theData_df)
@@ -47,7 +62,7 @@ weather_avg = create_weather_avg(theData_df)
 st.header('Proyek Analisis Data')
 st.subheader('Statistik Penyewaan Sepeda')
 
-# Metrik
+# Visualisas 1: terkena filter
 col1, col2 = st.columns(2)
 
 with col1:
@@ -107,6 +122,9 @@ axes[4].grid(True)
 plt.tight_layout()
 st.pyplot(fig)
 
+# Visualisasi ini seharusnya tidak kena filter, melainkan hanya untuk melihat kondisi yang paling sibuk
+# Ada salah call kemarin, sudah dibenarkan
+
 # Membuat Kategori jam/waktu
 def kategori_jam_baru(jam):
     if 0 <= jam <= 5:
@@ -118,7 +136,7 @@ def kategori_jam_baru(jam):
     else:
         return "Sore"
 
-hourData_df['waktu'] = hourData_df['hr'].apply(kategori_jam_baru)
+theData_df['waktu'] = theData_df['hr'].apply(kategori_jam_baru)
 
 # Ubah variabel hari dari angka ke char
 def day(weekday):
@@ -128,7 +146,7 @@ def day(weekday):
     else:
         return None
 
-hourData_df['hari'] = hourData_df['weekday'].apply(day)
+theData_df['hari'] = theData_df['weekday'].apply(day)
 
 # Ubah variabel season dari angka ke char
 def seasons_cat(season):
@@ -138,7 +156,7 @@ def seasons_cat(season):
     else:
         return None
 
-hourData_df['musim'] = hourData_df['season'].apply(seasons_cat)
+theData_df['musim'] = theData_df['season'].apply(seasons_cat)
 
 # Ubah variabel holiday dari angka ke char
 def hol(holiday):
@@ -147,11 +165,11 @@ def hol(holiday):
     else:
         return 'Ya'
 
-hourData_df['liburan'] = hourData_df['holiday'].apply(hol)
+theData_df['liburan'] = theData_df['holiday'].apply(hol)
 
 # Pivot tables
-pivot_kategori_waktu_hari = hourData_df.pivot_table(values='cnt', index='waktu', columns='hari', aggfunc='mean')
-pivot_kategori_musim_liburan = hourData_df.pivot_table(values='cnt', index='liburan', columns='musim', aggfunc='mean')
+pivot_kategori_waktu_hari = theData_df.pivot_table(values='cnt', index='waktu', columns='hari', aggfunc='mean')
+pivot_kategori_musim_liburan = theData_df.pivot_table(values='cnt', index='liburan', columns='musim', aggfunc='mean')
 
 # Membuat kolom kiri dan kanan
 col1, col2 = st.columns(2)
