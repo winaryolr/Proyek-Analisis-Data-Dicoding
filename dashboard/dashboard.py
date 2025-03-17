@@ -40,7 +40,6 @@ theData_df = pd.read_csv("all-data.csv")
 
 #Proses membuat filtering
 theData_df['dteday'] = pd.to_datetime(theData_df['dteday'])
-
 min_date = theData_df["dteday"].min()
 max_date = theData_df["dteday"].max()
 
@@ -50,6 +49,7 @@ with st.sidebar:
         max_value=max_date,
         value=[min_date, max_date]
     )
+    filter_option = st.selectbox("Pilih Kategori Statistik", ["Hari", "Musim", "Bulan"])
 
 # mengubah tipe data
 main_df = theData_df[
@@ -65,6 +65,38 @@ weather_avg = create_weather_avg(theData_df)
 
 st.header('Proyek Analisis Data')
 st.subheader('Statistik Penyewaan Sepeda')
+
+st.subheader(f"Statistik Penyewaan Sepeda Berdasarkan {filter_option}")
+
+if filter_option == "Hari":
+    fig, ax = plt.subplots(figsize=(10, 5))
+    sns.barplot(data=weekday_avg, x="weekday", y="average_cnt", ax=ax)
+    ax.set_title("Rata-rata Penyewaan Sepeda Berdasarkan Hari")
+    ax.set_xlabel("Hari")
+    ax.set_ylabel("Rata-rata Penyewaan")
+    ax.set_xticks(range(7))
+    ax.set_xticklabels(["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"])
+    st.pyplot(fig)
+
+elif filter_option == "Musim":
+    fig, ax = plt.subplots(figsize=(10, 5))
+    sns.barplot(data=season_avg, x="season", y="average_cnt", ax=ax)
+    ax.set_title("Rata-rata Penyewaan Sepeda Berdasarkan Musim")
+    ax.set_xlabel("Musim")
+    ax.set_ylabel("Rata-rata Penyewaan")
+    ax.set_xticks([1, 2, 3, 4])
+    ax.set_xticklabels(["Semi", "Panas", "Gugur", "Salju"])
+    st.pyplot(fig)
+
+elif filter_option == "Bulan":
+    fig, ax = plt.subplots(figsize=(10, 5))
+    sns.barplot(data=month_avg, x="mnth", y="average_cnt", ax=ax)
+    ax.set_title("Rata-rata Penyewaan Sepeda Berdasarkan Bulan")
+    ax.set_xlabel("Bulan")
+    ax.set_ylabel("Rata-rata Penyewaan")
+    ax.set_xticks(range(1, 13))
+    ax.set_xticklabels(["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"], rotation=45)
+    st.pyplot(fig)
 
 # Visualisas 1: terkena filter
 col1, col2 = st.columns(2)
